@@ -1,5 +1,119 @@
+<?php
+//ここにDBからデータを取得する処理を記述する
+//１DBへ接続
+$dsn = 'mysql:dbname=myfriends;host=localhost';
+$user = 'root';
+$password = '';
+  
+$dbh = new PDO($dsn, $user, $password);
+$dbh->query('SET NAMES utf8');
+
+
+//都道府県ID取得
+$data[] = $_GET['area_id'];
+
+//2　SQL作成
+//都道府県名取得
+ 
+$sql = 'SELECT * FROM`areas`WHERE `area_id` = ?';
+
+
+//３　SQL実行
+
+$stmt = $dbh->prepare($sql);
+$stmt->execute($data);
+
+
+
+//４　データ取得
+$rec = $stmt->fetch(PDO::FETCH_ASSOC);
+
+//データ格納用変す
+
+$name = $rec['area_name'];
+
+
+
+
+
+
+
+
+//2　SQL作成
+$sql = 'SELECT * FROM`friends`WHERE `area_id` = ?';
+
+//３　SQL実行
+$stmt = $dbh->prepare($sql);
+$stmt->execute($data);
+
+
+////４　データ取得
+
+$friends = array();
+
+//男女カウント用の変数
+$male = 0 ;
+$female = 0;
+
+
+while(1){
+  //データ取得
+  $rec = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  //取得できるデータがなかったらループ終了
+  if($rec == false){
+    break;
+  }
+  $friends[] = $rec;
+
+  //男女カウント 0(男)ならOK　ダメたら１（女）などそれ以上の数字をカウント
+if($rec['gender'] == 0){
+  //男性
+  $male++;
+}else{
+  //女性
+  $female++;
+}
+
+      //  header('Location: index.php'); // 指定したURLに遷移
+      // exit(); // これ以下の処理を停
+
+}
+
+//$_GET['action']が存在する　かつ空でない時、deleteが指定されたいたら削除処理を行う
+//削除処理を行ったら、index.phpに画面を遷移する
+
+// データの削除処理
+  if (!empty($_GET['action']) && $_GET['action'] == 'delete') {
+      // 物理削除
+      // $sql = 'DELETE FROM `posts` WHERE `id` = ?';
+    $sql = 'DELETE FROM `friends` WHERE `friend_id` = ?';
+      // // 論理削除 (フラグデータを変更)
+      // $sql = 'UPDATE `posts` SET `delete_flag` = 1 WHERE `id` = ?';
+      // $data[] = $_GET['id'];
+    $data[] = $friend_id;
+
+
+      $stmt = $dbh->prepare($sql);
+      $stmt->execute($data);
+      
+       header('Location: index.php'); // 指定したURLに遷移
+      exit(); // これ以下の処理を停止
+  }
+
+
+
+$dbh = null;
+
+?>
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="ja">
+
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -44,12 +158,15 @@
       </div>
       <!-- /.container-fluid -->
   </nav>
-
+ 
   <div class="container">
     <div class="row">
       <div class="col-md-4 content-margin-top">
-      <legend>北海道の友達</legend>
-      <div class="well">男性：2名　女性：1名</div>
+       
+      <legend><?php echo $name; ?>の友達</legend>
+      
+
+      <div class="well">男性：<?php echo $male; ?>名　女性：<?php echo $female; ?>名</div>
         <table class="table table-striped table-hover table-condensed">
           <thead>
             <tr>
@@ -59,16 +176,20 @@
           </thead>
           <tbody>
             <!-- 友達の名前を表示 -->
+             <?php foreach ($friends as $friend) :?>
             <tr>
-              <td><div class="text-center">山田　太郎</div></td>
+              <td><div class="text-center"><?php echo $friend['friend_name']; ?></div></td>
               <td>
                 <div class="text-center">
-                  <a href="edit.php"><i class="fa fa-pencil"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;
-                  <a href="javascript:void(0);" onclick="destroy();"><i class="fa fa-trash"></i></a>
+                  <a href="edit.php?friend_id=<?php echo $friend['friend_id'];?>"><i class="fa fa-pencil"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;
+<!--                   
+ -->                    
+                  <a href="javascript:void(0);" onclick="destroy(<?php echo $post['friend_id']; ?>);"><i class="fa fa-trash"></i></a>
                 </div>
               </td>
             </tr>
-            <tr>
+             <?php endforeach; ?>
+           <!--  <tr>
               <td><div class="text-center">小林　花子</div></td>
               <td>
                 <div class="text-center">
@@ -86,16 +207,38 @@
                 </div>
               </td>
             </tr>
+             </div>
           </tbody>
         </table>
 
         <input type="button" class="btn btn-default" value="新規作成" onClick="location.href='new.php'">
+         <a onclick="return confirm('本当に削除しますか？');" href="show.php?action=delete&friend_id=<?php echo $post['friend_id']; ?>"><i class="fa fa-trash trash"></i></a>
+                 
+
       </div>
     </div>
   </div>
 
+
+
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script>
+    function destroy() {
+    　// ポップアップを表示
+    　if(confirm('削除しますか？よろしいでしょうか？')==true){
+      //OK押した時 show.php に遷移　リフレッシュする actionでdelete処理を行う Javasquriptは＄が入らない。
+
+
+      location.href = 'show.php?action=delete&friend_id=' + friend_id;
+      return true
+    }else{
+      //キャンセル押した時
+      return false;
+    }
+  }
+
+</script>
   </body>
 </html>

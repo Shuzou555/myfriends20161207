@@ -1,3 +1,66 @@
+<?php
+//ここにDBからデータを取得する処理を記述する
+//１DBへ接続
+$dsn = 'mysql:dbname=myfriends;host=localhost';
+$user = 'root';
+$password = '';
+  
+$dbh = new PDO($dsn, $user, $password);
+$dbh->query('SET NAMES utf8');
+
+
+
+//2　SQL作成
+$sql = 'SELECT * FROM`areas`';
+
+//３　SQL実行
+$stmt = $dbh->prepare($sql);
+$stmt->execute();
+
+//４　データ取得
+//データ格納用変す
+$areas = array();
+
+
+
+
+while(1){
+  $rec = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  //取得できるデータがなかったらループ終了
+  if($rec == false){
+    break;
+  }
+  $areas[] = $rec ;
+
+
+}
+
+
+//DBに登録する処理 POST送信された時のみ実行したい処理を記述　存在しているisset 空っぽじゃない
+if(isset($_POST) && !empty($_POST)){
+
+//登録する友達のSQL(INSERT文) frined_idはオートインクリメントなので必要ない inputタグで書かれたのを入れる　.は文字列連結
+  $sql = 'INSERT INTO `friends`(`friend_name`, `area_id`, `gender`, `age`, `created`) 
+  VALUES ("'.$_POST['name']. '",' .$_POST['area_id']. ',' .$_POST['gender']. ',' .$_POST['age']. ',now())';
+  //SQL実行
+$stmt = $dbh->prepare($sql);
+$stmt->execute();
+
+//登録後、index.phpへの変遷
+header('Location:index.php');
+
+
+}
+
+
+//５　DB切断
+  $dbh = null;
+?>
+
+
+
+
 <!DOCTYPE html>
 <html lang="ja">
   <head>
@@ -57,16 +120,26 @@
               </div>
             </div>
             <!-- 出身 -->
+            
             <div class="form-group">
               <label class="col-sm-2 control-label">出身</label>
               <div class="col-sm-10">
                 <select class="form-control" name="area_id">
+                   
                   <option value="0">出身地を選択</option>
-                  <option value="1">北海道</option>
-                  <option value="2">青森</option>
+
+  <!--  IDで判別するためｐｈｐ文必要 -->
+                  <?php foreach ($areas as $area) :?>
+                
+                  <option value="<?php echo $area['area_id']; ?>"><?php echo $area['area_name']; ?></option>
+                  <?php endforeach; ?>
+
+
+            
+                <!--   <option value="2">青森</option>
                   <option value="3">岩手</option>
                   <option value="4">宮城</option>
-                  <option value="5">秋田</option>
+                  <option value="5">秋田</option> -->
                 </select>
               </div>
             </div>
@@ -75,9 +148,9 @@
               <label class="col-sm-2 control-label">性別</label>
               <div class="col-sm-10">
                 <select class="form-control" name="gender">
-                  <option value="0">性別を選択</option>
-                  <option value="1">男性</option>
-                  <option value="2">女性</option>
+                  <option value=-1>性別を選択</option>
+                  <option value="0">男性</option>
+                  <option value="1">女性</option>
                 </select>
               </div>
             </div>
