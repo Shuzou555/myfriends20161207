@@ -75,31 +75,52 @@ if($rec['gender'] == 0){
   $female++;
 }
 
+      // $stmt = $dbh->prepare($sql);
+      // $stmt->execute($data);
+
+
       //  header('Location: index.php'); // 指定したURLに遷移
       // exit(); // これ以下の処理を停
 
+
 }
+
+
 
 //$_GET['action']が存在する　かつ空でない時、deleteが指定されたいたら削除処理を行う
 //削除処理を行ったら、index.phpに画面を遷移する
 
+
+
+//issetないと存在しないことになる　箱を想像するissetは箱がある !emptyは箱の中身がある。
+   
 // データの削除処理
-  if (!empty($_GET['action']) && $_GET['action'] == 'delete') {
+  if (isset($_GET['action']) && !empty($_GET['action']) == 'delete') {
+
+    // if (isset($_GET['action']) && !empty($_GET['action'])){
+    //   if(GET['action'] == 'delete'){
+
+
+    
       // 物理削除
       // $sql = 'DELETE FROM `posts` WHERE `id` = ?';
-    $sql = 'DELETE FROM `friends` WHERE `friend_id` = ?';
-      // // 論理削除 (フラグデータを変更)
-      // $sql = 'UPDATE `posts` SET `delete_flag` = 1 WHERE `id` = ?';
-      // $data[] = $_GET['id'];
-    $data[] = $friend_id;
-
+    $sql = 'DELETE FROM `friends` WHERE `friend_id` = '.$_GET['friend_id'];
+    
+    // $data[] = $_POST['friend_id'];
+    // $data[] = $friend_id;
+     
 
       $stmt = $dbh->prepare($sql);
-      $stmt->execute($data);
-      
+      $stmt->execute();
+
+      // $friends = $stmt->fetch(PDO::FETCH_ASSOC);
+
+       
        header('Location: index.php'); // 指定したURLに遷移
       exit(); // これ以下の処理を停止
   }
+// }
+
 
 
 
@@ -183,8 +204,11 @@ $dbh = null;
                 <div class="text-center">
                   <a href="edit.php?friend_id=<?php echo $friend['friend_id'];?>"><i class="fa fa-pencil"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;
 <!--                   
+
  -->                    
-                  <a href="javascript:void(0);" onclick="destroy(<?php echo $post['friend_id']; ?>);"><i class="fa fa-trash"></i></a>
+
+                  <a href="javascript:void(0);" onclick="destroy(<?php echo $friend['friend_id']; ?>);"><i class="fa fa-trash"></i></a>
+
                 </div>
               </td>
             </tr>
@@ -212,8 +236,7 @@ $dbh = null;
         </table>
 
         <input type="button" class="btn btn-default" value="新規作成" onClick="location.href='new.php'">
-         <a onclick="return confirm('本当に削除しますか？');" href="show.php?action=delete&friend_id=<?php echo $post['friend_id']; ?>"><i class="fa fa-trash trash"></i></a>
-                 
+        
 
       </div>
     </div>
@@ -225,7 +248,7 @@ $dbh = null;
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script>
-    function destroy() {
+    function destroy(friend_id) {
     　// ポップアップを表示
     　if(confirm('削除しますか？よろしいでしょうか？')==true){
       //OK押した時 show.php に遷移　リフレッシュする actionでdelete処理を行う Javasquriptは＄が入らない。

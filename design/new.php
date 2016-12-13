@@ -40,7 +40,8 @@ while(1){
 //DBに登録する処理 POST送信された時のみ実行したい処理を記述　存在しているisset 空っぽじゃない
 if(isset($_POST) && !empty($_POST)){
 
-//登録する友達のSQL(INSERT文) frined_idはオートインクリメントなので必要ない inputタグで書かれたのを入れる　.は文字列連結
+//登録する友達のSQL(INSERT文) frined_idはオートインクリメントなので必要ない inputタグで書かれたのを入れる　.は文字列連結　必ず必要　
+  //自由に描く文字（この場合は名前）では　”　”　ダブルコーテーションで囲む
   $sql = 'INSERT INTO `friends`(`friend_name`, `area_id`, `gender`, `age`, `created`) 
   VALUES ("'.$_POST['name']. '",' .$_POST['area_id']. ',' .$_POST['gender']. ',' .$_POST['age']. ',now())';
   //SQL実行
